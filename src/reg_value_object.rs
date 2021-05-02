@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use regex::Regex;
 use std::fmt;
 use string_builder::Builder;
+use super::utils::*;
 
 pub struct RegValueObject {
     pub root: String,
@@ -129,17 +129,17 @@ impl RegValueObject {
             i32::from_str_radix(&tmp, 16).unwrap().to_string()
         }
         else if text_line.starts_with("hex(7):") {
-            let tmp_text = &self.strip_continue_char(&text_line[0..7])[..];
+            let tmp_text = &strip_continue_char(&text_line[0..7])[..];
             let string_array = tmp_text.split(',').collect::<Vec<&str>>();
             self.get_string_representation(string_array, text_encoding)
         }
         else if text_line.starts_with("hex(6):") {
-            let tmp_text = self.strip_continue_char(&text_line[0..7]);
+            let tmp_text = strip_continue_char(&text_line[0..7]);
             let string_array = tmp_text.split(',').collect::<Vec<&str>>();
             self.get_string_representation(string_array, text_encoding)
         }
         else if text_line.starts_with("hex(2):") {
-            let tmp_text = &self.strip_continue_char(&text_line[0..7])[..];
+            let tmp_text = &strip_continue_char(&text_line[0..7])[..];
             let string_array = tmp_text.split(',').collect::<Vec<&str>>();
             self.get_string_representation(string_array, text_encoding)
         }
@@ -147,7 +147,7 @@ impl RegValueObject {
             text_line[0..7].to_string()
         }
         else if text_line.starts_with("hex:") {
-            let tmp_text = &self.strip_continue_char(&text_line[0..4][..]);
+            let tmp_text = &strip_continue_char(&text_line[0..4][..]);
             if tmp_text.ends_with(',') {
                 tmp_text[0..text_line.len() - 1].to_string()
             }
@@ -205,34 +205,7 @@ impl RegValueObject {
             "REG_SZ" => "".to_string(),
             _ => "".to_string()
         }
-    }
-
-    fn strip_leading_chars(&self, line: &str, lead_char: &str) -> String {
-        let tmp_string = line.trim();
-        if tmp_string.starts_with(lead_char) && tmp_string.ends_with(lead_char)
-        {
-            tmp_string[1..tmp_string.len() - 2].to_string()
-        }
-        else {
-            tmp_string.to_string()
-        }
-    }
-
-    fn strip_braces(&self, line: &str) -> String {
-        let value = line.trim();
-        if line.starts_with('[') && line.ends_with(']')
-        {
-            value[1..value.len() - 2].to_string()
-        }
-        else {
-            value.to_string()
-        }
-    }
-
-    fn strip_continue_char(&self, line: &'static str) -> String {
-        let re = Regex::new("\\\\\r\n[ ]*").expect("Error parsing Regex");
-        re.replace(line, " ").to_string()
-    }
+    }    
 
     fn get_string_representation(&self, string_array: Vec<&str>, encoding: &str) -> String {
         if string_array.len() > 1
