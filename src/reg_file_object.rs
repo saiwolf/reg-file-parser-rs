@@ -65,20 +65,20 @@ impl RegFileObject {
                 skey = &skey[0..skey.len() - 1];
             }
 
-            skey = &strip_braces(skey);
+            let mut key = &strip_braces(skey);
 
-            if skey == "@" {
-                skey = "";
+            if key == "@" {
+                key = &"".to_string();
             }
             else {
-                skey = &strip_leading_chars(skey, "\\");
+                key = &strip_leading_chars(skey, "\\");
             }
             let bytes = &caps[1].as_bytes();
             let start_index = bytes[0] as usize + &caps.len();
             let next_match = &caps[2].as_bytes();
         }
 
-        HashMap<String, String>::new()
+        HashMap::new()
     }
 
     fn get_encoding(&self) -> String {
