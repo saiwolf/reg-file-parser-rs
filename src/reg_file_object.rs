@@ -51,18 +51,25 @@ impl Default for RegFileObject {
 }
 
 impl RegFileObject {    
-    /// Constructs a new instance of `RegFileObject`
-    ///
-    /// # Arguments
-    /// 
-    /// * `reg_file_name` - The name of the REG file to open
-    /// 
-    /// # Examples
-    /// 
-    /// ```
-    /// use reg_file_parser::reg_file_object::RegFileObject;
-    /// let reg_file_object = RegFileObject::new("./settings.reg");
-    /// ```
+    /**
+    Constructs a new instance of `RegFileObject`
+
+
+    # Arguments
+
+    * `reg_file_name` - The name of the REG file to open
+
+    # Returns
+    A `Result` containing either `Ok<RegFileObject>` or an `Err` containing the error message.
+
+    # Examples    
+
+    Testing non-existing file error:
+    ```
+    use reg_file_parser::reg_file_object::RegFileObject;
+    assert!(RegFileObject::new("./non-existant.reg").is_err());
+    ```
+    */
     pub fn new(reg_file_name: &str) -> Result<RegFileObject, Error>
     {
         let file = Path::new(reg_file_name);
@@ -85,8 +92,10 @@ impl RegFileObject {
         )
     }
 
-    /// # TODO
-    /// Imports the REG file
+    /**
+    # TODO
+    Imports the REG file
+    */
     pub fn read(&mut self) {
         // TODO
         strip_braces("TEST");
@@ -94,21 +103,25 @@ impl RegFileObject {
         strip_leading_chars("TEST", "T");
     }
 
-    /// # TODO
-    /// Parses the reg file for reg keys and reg values
-    /// 
-    /// Returns a HashMap with reg keys as HashMap keys and a HashMap of (valuename, valuedata)
-    /// 
+    /**
+    # TODO
+    Parses the reg file for reg keys and reg values
+
+    Returns a HashMap with reg keys as HashMap keys and a HashMap of (valuename, valuedata)
+
+    */
     pub fn parse_file(&self) -> HashMap<String, HashMap<String, String>> {
         // TODO
         HashMap::new()
     }
 
-    /// # NOT WORKING YET.
-    /// 
-    /// Creates a HashMap using given search pattern.
-    /// Takes the `content` field of `RegFileObject` and returns
-    /// a HashMap with retrieved keys and remaining content
+    /**
+    # NOT WORKING YET.
+
+    Creates a HashMap using given search pattern.
+    Takes the `content` field of `RegFileObject` and returns
+    a HashMap with retrieved keys and remaining content
+    */
     fn normalize_keys_dictionary(&self) -> HashMap<String, String> {
         let re = Regex::new(r"(?m)^[\t ]*\\[.+\\][\r\n]+").unwrap();
         for caps in re.captures_iter(&self.content[..]) {
@@ -136,10 +149,12 @@ impl RegFileObject {
         HashMap::new()
     }
 
-    /// # TODO
-    /// Creates a HashMap using given search pattern.
-    /// Takes the `content` field of `RegFileObject` and returns
-    /// a HashMap with retrieved keys and remaining content
+    /**
+    # TODO
+    Creates a HashMap using given search pattern.
+    Takes the `content` field of `RegFileObject` and returns
+    a HashMap with retrieved keys and remaining content
+    */
     fn normalize_values_dictionary(&self, content: String) -> HashMap<String, String> {
         // TODO
         HashMap::new()
