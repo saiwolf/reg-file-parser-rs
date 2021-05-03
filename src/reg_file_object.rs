@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use regex::Regex;
 use super::reg_value_object::*;
 use std::collections::HashMap;
@@ -15,11 +17,17 @@ use super::utils::*;
 /// * `full_path` - The absolute path to the REG file
 /// 
 pub struct RegFileObject {
+    /// The relative file path of the REG file
     pub path: String,
+    /// The file name of the REG file
     pub filename: String,
+    /// The file encoding of the REG file. ANSI or UTF8.
     pub encoding: String,
+    /// The raw content of the REG file.
     pub content: String,
+    /// The `HashMap` containing parsed registry values.
     pub regvalues: HashMap<String, HashMap<String, RegValueObject>>,
+    /// The full path to the REG file.
     pub full_path: String,
 }
 
@@ -77,6 +85,9 @@ impl RegFileObject {
     /// Imports the REG file
     pub fn read(&mut self) {
         // TODO
+        strip_braces("TEST");
+        strip_continue_char("TEST");
+        strip_leading_chars("TEST", "T");
     }
 
     /// # TODO

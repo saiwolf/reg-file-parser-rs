@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use regex::Regex;
 
 /// Strips specified leading chars from a `&str` and returns the result as a `String`

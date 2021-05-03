@@ -1,4 +1,5 @@
-<h1 align="center">Windows Registry File Parser</h1>
+# Windows Registry File Parser
+
 <p>
   <img alt="Version" src="https://img.shields.io/badge/version-0.1.0-blue.svg?cacheSeconds=2592000" />
   <a href="./LICENSE" target="_blank">

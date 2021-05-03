@@ -14,15 +14,21 @@ use super::utils::*;
 /// * `parent_key_without_root` - Registry Value parent key, without root HIVE
 /// * `entry` - Registry Value name
 /// * `value` - Registry Value data
-/// * `type` - Registry Value type
+/// * `reg_type` - Registry Value type
 /// 
 pub struct RegValueObject {
+    /// Registry Root HIVE
     pub root: String,
+    /// Registry Value parent key, if applicable
     pub parent_key: String,
+    /// Registry Value parent key, without root HIVE
     pub parent_key_without_root: String,
+    /// Registry Value Name
     pub entry: String,
+    /// Registry Value Data
     pub value: String,
-    pub r#type: String,
+    /// Registry Value Type
+    pub reg_type: String,
 }
 
 impl Default for  RegValueObject {
@@ -33,7 +39,7 @@ impl Default for  RegValueObject {
             parent_key_without_root: String::new(),
             entry: String::new(),
             value: String::new(),
-            r#type: String::new(),
+            reg_type: String::new(),
         }
     }    
 }
@@ -42,7 +48,7 @@ impl Default for  RegValueObject {
 // Ex: let reg = RegValueObject::new("./settings.reg").to_string();
 impl fmt::Display for RegValueObject {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}\\\\{}={}{}", self.parent_key, self.entry, self.set_reg_entry_type(&self.r#type[..]), self.value)
+        write!(f, "{}\\\\{}={}{}", self.parent_key, self.entry, self.set_reg_entry_type(&self.reg_type[..]), self.value)
     }
 }
 
@@ -70,7 +76,7 @@ impl RegValueObject {
             parent_key_without_root: self.get_hive_without_root(&self.parent_key),
             root: self.get_hive(&self.parent_key_without_root).to_string(),
             entry: reg_value_name.to_string(),
-            r#type: self.get_reg_entry_type(&reg_value_data).to_string(),
+            reg_type: self.get_reg_entry_type(&reg_value_data).to_string(),
             value: self.get_reg_entry_value(reg_value_data, encoding),
         }
     }

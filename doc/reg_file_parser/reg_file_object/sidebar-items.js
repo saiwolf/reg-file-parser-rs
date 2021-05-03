@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["RegFileObject","Represents a registry file’s properties"]]});

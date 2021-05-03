@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["RegValueObject","Represents a Registry Value"]]});
