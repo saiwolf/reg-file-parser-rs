@@ -1,12 +1,19 @@
 use regex::Regex;
 use super::reg_value_object::*;
-use std::fmt;
 use std::collections::HashMap;
 use std::path::Path;
-use std::io::prelude::*;
-use string_builder::Builder;
 use super::utils::*;
 
+/// Represents a registry file's properties
+/// 
+/// # Arguments
+/// 
+/// * `path` - The relative file path of the REG file
+/// * `filename` - The file name of the REG file
+/// * `encoding` - The file encoding of the REG file. Either ANSI or UTF8.
+/// * `regvalues` - The `HashMap` containing parsed registry values
+/// * `full_path` - The absolute path to the REG file
+/// 
 pub struct RegFileObject {
     pub path: String,
     pub filename: String,
@@ -16,6 +23,11 @@ pub struct RegFileObject {
     pub full_path: String,
 }
 
+///
+/// `Default` implmentation of `RegFileObject`
+/// Assigns defualt values.
+/// `encoding` is set to UTF8
+/// 
 impl Default for RegFileObject {
     fn default() -> RegFileObject {
         RegFileObject {
@@ -29,7 +41,19 @@ impl Default for RegFileObject {
     }
 }
 
-impl RegFileObject {
+impl RegFileObject {    
+    /// Constructs a new instance of `RegFileObject`
+    ///
+    /// # Arguments
+    /// 
+    /// * `reg_file_name` - The name of the REG file to open
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// use reg-file-parser::reg_file_object::RegFileObject;
+    /// let reg_file_object = RegFileObject::new("./settings.reg");
+    /// ```
     pub fn new(&self, reg_file_name: &str) -> RegFileObject
     {
         let file_name = Path::new(reg_file_name)
@@ -49,11 +73,27 @@ impl RegFileObject {
         }
     }
 
+    /// # TODO
+    /// Imports the REG file
     pub fn read(&mut self) {
-        if Path::new(&self.path).exists() {
-        }
+        // TODO
     }
 
+    /// # TODO
+    /// Parses the reg file for reg keys and reg values
+    /// 
+    /// Returns a HashMap with reg keys as HashMap keys and a HashMap of (valuename, valuedata)
+    /// 
+    pub fn parse_file(&self) -> HashMap<String, HashMap<String, String>> {
+        // TODO
+        HashMap::new()
+    }
+
+    /// # NOT WORKING YET.
+    /// 
+    /// Creates a HashMap using given search pattern.
+    /// Takes the `content` field of `RegFileObject` and returns
+    /// a HashMap with retrieved keys and remaining content
     fn normalize_keys_dictionary(&self) -> HashMap<String, String> {
         let re = Regex::new(r"(?m)^[\t ]*\\[.+\\][\r\n]+").unwrap();
         for caps in re.captures_iter(&self.content[..]) {
@@ -81,11 +121,12 @@ impl RegFileObject {
         HashMap::new()
     }
 
-    fn get_encoding(&self) -> String {
-        let re = Regex::new(r"(?i)([ ]*(\r\n)*)(?i)REGEDIT4").unwrap();
-        match re.is_match(&self.content[..]) {
-            true => "ANSI".to_string(),
-            false => "UTF8".to_string(),
-        }
+    /// # TODO
+    /// Creates a HashMap using given search pattern.
+    /// Takes the `content` field of `RegFileObject` and returns
+    /// a HashMap with retrieved keys and remaining content
+    fn normalize_values_dictionary(&self, content: String) -> HashMap<String, String> {
+        // TODO
+        HashMap::new()
     }
 }
