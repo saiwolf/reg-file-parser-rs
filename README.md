@@ -21,6 +21,9 @@ cargo build
 cargo test
 ```
 
+## View Rust Documentation
+Open `./doc/reg_file_parser/index.html` in your browser
+
 ## Author
 
 👤 **Robert Cato**
