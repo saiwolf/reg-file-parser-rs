@@ -5,17 +5,19 @@ use std::fmt;
 use string_builder::Builder;
 use super::utils::*;
 
-/// Represents a Registry Value
-/// 
-/// # Arguments
-/// 
-/// * `root` - Registry Root HIVE
-/// * `parent_key` - Registry Value parent key, if applicable
-/// * `parent_key_without_root` - Registry Value parent key, without root HIVE
-/// * `entry` - Registry Value name
-/// * `value` - Registry Value data
-/// * `reg_type` - Registry Value type
-/// 
+/**
+Represents a Registry Value
+
+# Arguments
+
+* `root` - Registry Root HIVE
+* `parent_key` - Registry Value parent key, if applicable
+* `parent_key_without_root` - Registry Value parent key, without root HIVE
+* `entry` - Registry Value name
+* `value` - Registry Value data
+* `reg_type` - Registry Value type
+
+*/
 pub struct RegValueObject {
     /// Registry Root HIVE
     pub root: String,
@@ -48,44 +50,54 @@ impl Default for  RegValueObject {
 // Ex: let reg = RegValueObject::new("./settings.reg").to_string();
 impl fmt::Display for RegValueObject {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}\\\\{}={}{}", self.parent_key, self.entry, self.set_reg_entry_type(&self.reg_type[..]), self.value)
+        write!(f, "{}\\\\{}={}{}", self.parent_key, self.entry, Self::set_reg_entry_type(&self.reg_type[..]), self.value)
     }
 }
 
 impl RegValueObject {
-    /// Returns a `RegValueObject` given the following parameters:
-    /// 
-    /// # Arguments
-    /// 
-    /// * `reg_key_name` - Name of Registry Key
-    /// * `reg_value_name` - Name of Registry Value
-    /// * `reg_value_data` - Data of Registry Value
-    /// * `encoding` - Encoding of data. Either UTF8 or ANSI
-    /// 
-    /// # Example
-    /// 
-    /// ```
-    /// use reg-file-parser::reg_value_object::RegValueObject;
-    /// let reg_value = RegValueObject::new("Settings", "BackgroundColor", "#000000", "UTF8");
-    /// assert_eq!(reg_value.value, "#000000");
-    /// ```
-    /// 
-    pub fn new(&self, reg_key_name: &'static str, reg_value_name: &'static str, reg_value_data: &'static str, encoding: &'static str) -> RegValueObject {
+    /**
+    Returns a `RegValueObject` given the following parameters:
+
+    # Arguments
+
+    * `reg_key_name` - Name of Registry Key
+    * `reg_value_name` - Name of Registry Value
+    * `reg_value_data` - Data of Registry Value
+    * `encoding` - Encoding of data. Either UTF8 or ANSI
+
+    # Example
+
+    ```
+    use reg_file_parser::reg_value_object::RegValueObject;
+    let reg_value = RegValueObject::new("Settings", "BackgroundColor", "#000000", "UTF8");
+    assert_eq!(reg_value.value, "#000000");
+    ```
+
+    */
+    pub fn new(reg_key_name: &'static str, reg_value_name: &'static str, reg_value_data: &'static str, encoding: &'static str) -> RegValueObject {
+        let parent_key = reg_key_name.trim().to_string();
+        let parent_key_without_root = Self::get_hive_without_root(&parent_key);
+        let root = Self::get_hive(&parent_key_without_root).to_string();
+        let entry = reg_value_name.to_string();
+        let reg_type = Self::get_reg_entry_type(&reg_value_data).to_string();
+        let value = Self::get_reg_entry_value(reg_value_data, encoding);
         RegValueObject {
-            parent_key: reg_key_name.trim().to_string(),
-            parent_key_without_root: self.get_hive_without_root(&self.parent_key),
-            root: self.get_hive(&self.parent_key_without_root).to_string(),
-            entry: reg_value_name.to_string(),
-            reg_type: self.get_reg_entry_type(&reg_value_data).to_string(),
-            value: self.get_reg_entry_value(reg_value_data, encoding),
+            parent_key,
+            parent_key_without_root,
+            root,
+            entry,
+            reg_type,
+            value,
         }
     }
 
-    /// Gets registry hive without the root hive
-    /// 
-    /// * `skey` - Registry Key to get root hive of
-    /// 
-    fn get_hive_without_root(&self, mut skey: &str) -> String {
+    /**
+    Gets registry hive without the root hive
+
+    * `skey` - Registry Key to get root hive of
+
+    */
+    fn get_hive_without_root(mut skey: &str) -> String {
         let tmp_line = skey.trim();
 
         if tmp_line.starts_with("HKEY_LOCAL_MACHINE") {
@@ -137,11 +149,13 @@ impl RegValueObject {
         }
     }
 
-    /// Returns Registry Root Hive
-    /// 
-    /// * `skey` - Registry Key to get root hive of
-    ///
-    fn get_hive(&self, skey: &str) -> &'static str {
+    /**
+    Returns Registry Root Hive
+
+    * `skey` - Registry Key to get root hive of
+
+    */
+    fn get_hive(skey: &str) -> &'static str {
         let tmp_line = skey.trim();
 
         if tmp_line.starts_with("HKEY_LOCAL_MACHINE") {
@@ -164,12 +178,14 @@ impl RegValueObject {
         }
     }
 
-    /// Returns the registry value without the type declaration in front.
-    /// 
-    /// * `text_line` - The line of text to parse
-    /// * `text_encoding` - The line encoding
-    /// 
-    fn get_reg_entry_value(&self, text_line: &'static str, text_encoding: &str) -> String {
+    /**
+    Returns the registry value without the type declaration in front.
+
+    * `text_line` - The line of text to parse
+    * `text_encoding` - The line encoding
+
+    */
+    fn get_reg_entry_value(text_line: &'static str, text_encoding: &str) -> String {
         if text_line.starts_with("hex(a):") ||  text_line.starts_with("hex(b):") {            
             text_line[0..7].to_string()
         }
@@ -180,17 +196,17 @@ impl RegValueObject {
         else if text_line.starts_with("hex(7):") {
             let tmp_text = &strip_continue_char(&text_line[0..7])[..];
             let string_array = tmp_text.split(',').collect::<Vec<&str>>();
-            self.get_string_representation(string_array, text_encoding)
+            Self::get_string_representation(string_array, text_encoding)
         }
         else if text_line.starts_with("hex(6):") {
             let tmp_text = strip_continue_char(&text_line[0..7]);
             let string_array = tmp_text.split(',').collect::<Vec<&str>>();
-            self.get_string_representation(string_array, text_encoding)
+            Self::get_string_representation(string_array, text_encoding)
         }
         else if text_line.starts_with("hex(2):") {
             let tmp_text = &strip_continue_char(&text_line[0..7])[..];
             let string_array = tmp_text.split(',').collect::<Vec<&str>>();
-            self.get_string_representation(string_array, text_encoding)
+            Self::get_string_representation(string_array, text_encoding)
         }
         else if text_line.starts_with("hex(0):") {
             text_line[0..7].to_string()
@@ -209,13 +225,15 @@ impl RegValueObject {
         }
     }
 
-    /// Retrieves the reg value type, parsing the prefix of the value
-    ///
-    /// * `text_line` - The line of text to parse
-    /// 
-    /// This function will return "REG_SZ" if a match is not found.
-    /// 
-    fn get_reg_entry_type(&self, text_line: &str) -> &'static str {
+    /**
+    Retrieves the reg value type, parsing the prefix of the value
+
+    * `text_line` - The line of text to parse
+
+    This function will return "REG_SZ" if a match is not found.
+
+    */
+    fn get_reg_entry_type(text_line: &str) -> &'static str {
         if text_line.starts_with("hex(a):") {            
             "REG_RESOURCE_REQUIREMENTS_LIST"
         }
@@ -245,39 +263,41 @@ impl RegValueObject {
         }
     }
 
-    /// Sets the registry entry's type from the given data string
-    /// 
-    /// * `reg_data_type` - Data type. See Types below
-    /// 
-    /// # Types
-    /// 
-    /// hex: REG_BINARY
-    /// 
-    /// hex(0): REG_NONE
-    /// 
-    /// hex(1): REG_SZ
-    /// 
-    /// hex(2): EXPAND_SZ
-    /// 
-    /// hex(3): REG_BINARY
-    /// 
-    /// hex(4): REG_DWORD
-    /// 
-    /// hex(5): REG_DWORD_BIG_ENDIAN - invalid type?
-    /// 
-    /// hex(6): REG_LINK
-    /// 
-    /// hex(7): REG_MULTI_SZ
-    /// 
-    /// hex(8): REG_RESOURCE_LIST
-    /// 
-    /// hex(9): REG_FULL_RESOURCE_DESCRIPTOR
-    /// 
-    /// hex(a): REG_RESOURCE_REQUIREMENTS_LIST
-    /// 
-    /// hex(b): REG_QWORD
-    /// 
-    fn set_reg_entry_type(&self, reg_data_type: &str) -> String {
+    /**
+    Sets the registry entry's type from the given data string
+
+    * `reg_data_type` - Data type. See Types below
+
+    # Types
+
+    hex: REG_BINARY
+
+    hex(0): REG_NONE
+
+    hex(1): REG_SZ
+
+    hex(2): EXPAND_SZ
+
+    hex(3): REG_BINARY
+
+    hex(4): REG_DWORD
+
+    hex(5): REG_DWORD_BIG_ENDIAN - invalid type?
+
+    hex(6): REG_LINK
+
+    hex(7): REG_MULTI_SZ
+
+    hex(8): REG_RESOURCE_LIST
+
+    hex(9): REG_FULL_RESOURCE_DESCRIPTOR
+
+    hex(a): REG_RESOURCE_REQUIREMENTS_LIST
+
+    hex(b): REG_QWORD
+
+    */
+    fn set_reg_entry_type(reg_data_type: &str) -> String {
         match reg_data_type {
             "REG_QWORD" => "hex(b):".to_string(),
             "REG_RESOURCE_REQUIREMENTS_LIST" => "hex(a):".to_string(),
@@ -294,16 +314,18 @@ impl RegValueObject {
         }
     }    
 
-    /// Converts the byte arrays (`Vec<&str>`) into string
-    /// 
-    /// Hews close to C# implementation by using `string_builder` crate
-    /// 
-    /// # Arguments
-    /// 
-    /// * `string_array` - Vec array to convert
-    /// * `encoding` - File Encoding
-    /// 
-    fn get_string_representation(&self, string_array: Vec<&str>, encoding: &str) -> String {
+    /**
+    Converts the byte arrays (`Vec<&str>`) into string
+
+    Hews close to C# implementation by using `string_builder` crate
+
+    # Arguments
+
+    * `string_array` - Vec array to convert
+    * `encoding` - File Encoding
+
+    */
+    fn get_string_representation(string_array: Vec<&str>, encoding: &str) -> String {
         if string_array.len() > 1
         {
             let mut sb = Builder::default();

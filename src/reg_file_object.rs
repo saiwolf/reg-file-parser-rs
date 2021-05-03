@@ -3,6 +3,7 @@
 use regex::Regex;
 use super::reg_value_object::*;
 use std::collections::HashMap;
+use std::io::{Error, ErrorKind};
 use std::path::Path;
 use super::utils::*;
 
@@ -59,26 +60,29 @@ impl RegFileObject {
     /// # Examples
     /// 
     /// ```
-    /// use reg-file-parser::reg_file_object::RegFileObject;
+    /// use reg_file_parser::reg_file_object::RegFileObject;
     /// let reg_file_object = RegFileObject::new("./settings.reg");
     /// ```
-    pub fn new(&self, reg_file_name: &str) -> RegFileObject
+    pub fn new(reg_file_name: &str) -> Result<RegFileObject, Error>
     {
-        let file_name = Path::new(reg_file_name)
-                            .file_name()
-                            .unwrap()
-                            .to_str()
-                            .unwrap()
-                            .to_string();
-
-        RegFileObject {
-            path: reg_file_name.to_string(),
-            filename: file_name,
-            encoding: "UTF8".to_string(),
-            regvalues: HashMap::new(),
-            full_path: String::new(),
-            content: String::new(),
+        let file = Path::new(reg_file_name);
+        
+        if !file.exists() {
+            return Err(Error::new(ErrorKind::NotFound, format!("Error opening file: {}.", reg_file_name)));
         }
+
+        let file_name = file.file_name().unwrap().to_str().unwrap().to_string();
+
+        Ok(
+            RegFileObject {
+                path: reg_file_name.to_string(),
+                filename: file_name,
+                encoding: "UTF8".to_string(),
+                regvalues: HashMap::new(),
+                full_path: String::new(),
+                content: String::new(),
+            }
+        )
     }
 
     /// # TODO
