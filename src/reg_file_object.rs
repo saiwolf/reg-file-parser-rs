@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use regex::Regex;
+use regex::{Regex, RegexSet};
 use super::reg_value_object::*;
 use std::collections::HashMap;
 use std::io::{Error, ErrorKind};
@@ -122,9 +122,12 @@ impl RegFileObject {
     Takes the `content` field of `RegFileObject` and returns
     a HashMap with retrieved keys and remaining content
     */
-    fn normalize_keys_dictionary(&self) -> HashMap<String, String> {
+    fn normalize_keys_dictionary(&self, content: &str) -> HashMap<String, String> {
         let re = Regex::new(r"(?m)^[\t ]*\\[.+\\][\r\n]+").unwrap();
-        for caps in re.captures_iter(&self.content[..]) {
+        
+        let mut dict = HashMap::<String, String>::new();
+
+        for caps in re.captures_iter(&content) {
             let mut skey: &str = &caps[0];
             if skey.ends_with("\r\n") {
                 skey = &skey[0..skey.len() - 2];
@@ -133,20 +136,24 @@ impl RegFileObject {
                 skey = &skey[0..skey.len() - 1];
             }
 
-            let mut key = &strip_braces(skey);
+            let mut key = strip_braces(&skey);
 
-            if key == "@" {
-                key = &"".to_string();
+            if key == "@" { key = "".to_string(); }
+
+            key = strip_leading_chars(skey, "\\");
+
+            let keylen: usize = key.len();
+
+            let mut value = &content[keylen + 1..];
+
+            if value.ends_with("\r\n") {
+                value = &value[0..value.len() - 2];
             }
-            else {
-                key = &strip_leading_chars(skey, "\\");
-            }
-            let bytes = &caps[1].as_bytes();
-            let start_index = bytes[0] as usize + &caps.len();
-            let next_match = &caps[2].as_bytes();
+
+            dict.insert(key.to_string(), value.to_string());
         }
 
-        HashMap::new()
+        dict
     }
 
     /**
@@ -156,7 +163,14 @@ impl RegFileObject {
     a HashMap with retrieved keys and remaining content
     */
     fn normalize_values_dictionary(&self, content: String) -> HashMap<String, String> {
-        // TODO
-        HashMap::new()
+        let re = Regex::new(r#"(?m)^[\t ]*(".+"|@)=("[^"]*"|[^"]+)"#).unwrap();
+        
+        let mut dict = HashMap::<String, String>::new();
+
+        for caps in re.captures_iter(&content) {
+
+        }
+
+        dict
     }
 }
