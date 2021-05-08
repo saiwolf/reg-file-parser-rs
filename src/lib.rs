@@ -8,6 +8,12 @@
 
 extern crate regex;
 extern crate string_builder;
+extern crate snafu;
+
+/**
+Custom App Errors module
+ */
+pub mod errors;
 
 /// Registry File Object.
 /// 
@@ -26,3 +32,4 @@ mod utils;
 
 pub use reg_value_object::*;
 pub use reg_file_object::*;
+pub use errors::*;

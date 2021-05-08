@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
 use regex::{Regex, RegexSet};
+use super::errors::{Error::HashMapEmpty, Result};
+
 use super::reg_value_object::*;
 use std::collections::HashMap;
 use std::io::{Error, ErrorKind};
@@ -122,38 +124,39 @@ impl RegFileObject {
     Takes the `content` field of `RegFileObject` and returns
     a HashMap with retrieved keys and remaining content
     */
-    fn normalize_keys_dictionary(&self, content: &str) -> HashMap<String, String> {
-        let re = Regex::new(r"(?m)^[\t ]*\\[.+\\][\r\n]+").unwrap();
-        
-        let mut dict = HashMap::<String, String>::new();
+    fn normalize_keys_dictionary(&self, content: &str) -> crate::errors::Result<HashMap<String, String>> {
+        let re = Regex::new(r"(?m)^[\t ]*\[.+\][\r\n]+").unwrap();
+    let encoding = "UTF8";
+    let mut dict = HashMap::<String, String>::new();
 
-        for caps in re.captures_iter(&content) {
-            let mut skey: &str = &caps[0];
-            if skey.ends_with("\r\n") {
-                skey = &skey[0..skey.len() - 2];
-            }
-            if skey.ends_with('=') {
-                skey = &skey[0..skey.len() - 1];
-            }
-
-            let mut key = strip_braces(&skey);
-
-            if key == "@" { key = "".to_string(); }
-
-            key = strip_leading_chars(skey, "\\");
-
-            let keylen: usize = key.len();
-
-            let mut value = &content[keylen + 1..];
-
-            if value.ends_with("\r\n") {
-                value = &value[0..value.len() - 2];
-            }
-
-            dict.insert(key.to_string(), value.to_string());
+    for caps in re.captures_iter(&content) {
+        let mut skey: &str = &caps[0];
+        if skey.ends_with("\r\n") {
+            skey = &skey[0..skey.len() - 2];
         }
+        if skey.ends_with('=') {
+            skey = &skey[0..skey.len() - 1];
+        }
+        let mut key = strip_braces(&skey);
+        
+        key = strip_leading_chars(&key, "\\");
+        
+        let value = &content.replace("Windows Registry Editor Version 5.00", "")
+        let value2 = &value.trim_start_matches("\n\n");
+            let value3 = &value2.replace(skey, "")
+            .trim();
+        
+        if value.ends_with("\r\n") {
+            value = &&value.trim_end_matches("\r").trim_end_matches("\n");
+        }
+        
+        dict.insert(key.to_string(), value.to_string());
+    }
 
-        dict
+        match dict.keys().len() {
+            0 => Err(HashMapEmpty),
+            _ => Ok(dict)
+        }
     }
 
     /**
@@ -162,7 +165,7 @@ impl RegFileObject {
     Takes the `content` field of `RegFileObject` and returns
     a HashMap with retrieved keys and remaining content
     */
-    fn normalize_values_dictionary(&self, content: String) -> HashMap<String, String> {
+    fn normalize_values_dictionary(&self, content: String) -> Result<HashMap<String, String>, String> {
         let re = Regex::new(r#"(?m)^[\t ]*(".+"|@)=("[^"]*"|[^"]+)"#).unwrap();
         
         let mut dict = HashMap::<String, String>::new();
@@ -171,6 +174,6 @@ impl RegFileObject {
 
         }
 
-        dict
+        Ok(dict)
     }
 }
